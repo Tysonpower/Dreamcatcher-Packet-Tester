@@ -326,6 +326,7 @@ int main()
     ModulationParams_t modulationParams; 
 	uint16_t mixer_freq = 0;
 	pthread_t p,c;
+	int mixer_freq_mhz;
 	struct threadargs p_args,c_args;
 
 	printf( "\n\n\r     Dreamcatcher Chat (v.%s)\n\n\r", "0.0 alpha" );
@@ -383,11 +384,13 @@ int main()
 
 	while (!mixer_freq)
 	{
-		printf("Select MIXER frequency (Mhz):");
+		printf("Select TX frequency (Mhz):");
 		if ((scanf("%llu",&mixer_freq)==1)&&(mixer_freq>=40)&&(mixer_freq<=6000))
 		{
-			printf("Selected mixer frequency: %hu MHz\r\n",mixer_freq;
-		    rffc5071_set_frequency(&mixer, mixer_freq);
+			printf("Selected TX frequency: %hu MHz\r\n",mixer_freq;
+		    //allow actually inputting the damn tx freq that you want
+			mixer_freq_mhz = 2400 - mixer_freq;
+			rffc5071_set_frequency(&mixer, mixer_freq_mhz);
 		}else{
 			printf("Invalid choice. Range is 40 MHz to 6 GHz\r\n");
 			mixer_freq=0;
