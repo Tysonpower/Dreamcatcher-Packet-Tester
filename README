@@ -28,8 +28,22 @@ any local modifications to those continue to be licensed under their respective 
 How do I build Dreamcatcher Chat?
 ------------------------------------------------------------------------
 
-(requires debian stretch or later, kernel 4.14 or later,
- will not work on kernel 4.10, or debian jessie or older)
+Dreamcatcher Chat requires Debian Stretch or later, kernel 4.14 or later,
+This application will not work on kernel 4.10, or Debian Jessie or older. 
+
+An Armbian image for Dreamcatcher can be found here: 
+https://archive.othernet.is/Dreamcatcher3%20Armbian/
+
+After burning the Armbian image to a microSD card, login with the following. 
+
+Username: root
+Password: 1234
+
+Connect to a WiFi network with the command:
+
+   sudo nmtui
+
+You are now ready to follow the appllication installation instructions below. 
 
 1) Install libsoc and libsoc-dev: sudo apt install libsoc2 libsoc-dev
 
@@ -38,8 +52,7 @@ How do I build Dreamcatcher Chat?
 
 2) get the code
 
-git clone https://github.com/Outernet-Project/Dreamcatcher-Packet-Tester
-cd Dreamcatcher-Packet-Tester
+git clone https://github.com/F5OEO/Dreamcatcher-Packet-Tester
 
 
 3) make
