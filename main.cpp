@@ -177,6 +177,7 @@ uint16_t TxIrqMask = IRQ_TX_DONE | IRQ_RX_TX_TIMEOUT;
  */
 PacketParams_t PacketParams;
 PacketStatus_t PacketStatus;
+ModulationParams_t modulationParams; 
 
 gpio_t_rffc gpio_rffc5072_select;
 gpio_t_rffc gpio_rffc5072_clock;
@@ -323,8 +324,8 @@ void process_message(uint16_t frame_no)
 int main()
 {
 	bool isMaster = true;
-    ModulationParams_t modulationParams; 
-	uint16_t mixer_freq = 0;
+   
+	int mixer_freq = 0;
 	pthread_t p,c;
 	int mixer_freq_mhz;
 	struct threadargs p_args,c_args;
@@ -381,11 +382,16 @@ int main()
     PacketParams.Params.LoRa.PayloadLength  = 50;
     PacketParams.Params.LoRa.Crc            = LORA_CRC_ON;
     PacketParams.Params.LoRa.InvertIQ       = LORA_IQ_INVERTED;
+/*
+	mixer_freq = 437;
+	mixer_freq_mhz = 2400 - mixer_freq;
+	rffc5071_set_frequency(&mixer, mixer_freq_mhz);
+*/	
 
 	while (!mixer_freq)
 	{
 		printf("Select TX frequency (Mhz):");
-		if ((scanf("%llu",&mixer_freq)==1)&&(mixer_freq>=40)&&(mixer_freq<=6000))
+		if ((scanf("%d",&mixer_freq)==1)&&(mixer_freq>=40)&&(mixer_freq<=6000))
 		{
 			printf("Selected TX frequency: %hu MHz\r\n",mixer_freq);
 		    //allow actually inputting the damn tx freq that you want
