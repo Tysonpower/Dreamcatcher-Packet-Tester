@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
 #include <string.h>
 #include "rffc5071.h"
 #include "rffc5071_spi.h"
@@ -321,18 +322,153 @@ void process_message(uint16_t frame_no)
 	bcast_frame_no = frame_no;
 }
 
-int main()
+void show_usage(char* prog_name)
+{
+    printf("Usage: %s\n", prog_name);
+    printf("Options:\n");
+    printf("\t-h,\tShow this help message\n");
+    printf("\t-f,\tSpecify the TX frequency (40-6000 MHz)\n");
+    printf("\t-s,\tSpecify the SpreadingFactor (default: 192)\n");
+    printf("\t\t\t Accept values: 80, 96, 112, 128, 144, 160, 176, 192\n\n");
+    printf("\t-b,\tSpecify the Bandwidth (default: 38)\n");
+    printf("\t\t\t Accept values: 52, 38, 24, 10\n\n");
+    printf("\t-c,\tSpecify the CodingRate (default: 1)\n");
+    printf("\t\t\t Accept values: 1, 2, 3, 4, 5, 6, 7\n\n");
+}
+
+int main(int argc, char *argv[])
 {
 	bool isMaster = true;
-   
-	int mixer_freq = 0;
+    int mixer_freq = 0;
+
 	pthread_t p,c;
 	int mixer_freq_mhz;
 	struct threadargs p_args,c_args;
 
+    PacketParams.PacketType                 = PACKET_TYPE_LORA;
+    PacketParams.Params.LoRa.PreambleLength = 0x08;
+    PacketParams.Params.LoRa.HeaderType     = LORA_PACKET_VARIABLE_LENGTH;
+    PacketParams.Params.LoRa.PayloadLength  = 50;
+    PacketParams.Params.LoRa.Crc            = LORA_CRC_ON;
+    PacketParams.Params.LoRa.InvertIQ       = LORA_IQ_INVERTED;
+
+    modulationParams.PacketType                  = PACKET_TYPE_LORA;
+    modulationParams.Params.LoRa.SpreadingFactor = LORA_SF12;
+    modulationParams.Params.LoRa.Bandwidth       = LORA_BW_0400;
+    modulationParams.Params.LoRa.CodingRate      = LORA_CR_4_5;
+
+    int opt;
+	while ((opt = getopt(argc, argv, "hf:s:b:c:")) != -1) {
+        switch (opt)
+        {
+      		case 'h':
+        		show_usage(argv[0]);
+        		return 0;
+      		case 'f':
+			  	mixer_freq = atoi(optarg);
+				if ((mixer_freq>=40)&&(mixer_freq<=6000)) {
+					printf("\nSelected TX frequency: %hu MHz\r\n\n",mixer_freq);
+					mixer_freq_mhz = 2400 - mixer_freq;
+				} else {
+					printf("\nInvalid choice. Range is 40 MHz to 6 GHz\r\n\n");
+					return 1;
+				}
+        		break;
+      		case 's':
+				switch (atoi(optarg)) {
+					case LORA_SF5:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF5;
+						break;
+					case LORA_SF6:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF6;
+						break;
+					case LORA_SF7:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF7;
+						break;
+					case LORA_SF8:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF8;
+						break;
+					case LORA_SF9:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF9;
+						break;
+					case LORA_SF10:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF10;
+						break;
+					case LORA_SF11:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF11;
+						break;
+					case LORA_SF12:
+						modulationParams.Params.LoRa.SpreadingFactor = LORA_SF12;
+						break;
+					default:
+						printf("\nInvalid choice for spreading factor.\r\n\n");
+		        		show_usage(argv[0]);
+        				return 1;
+				}
+        		break;
+      		case 'b':
+				switch (atoi(optarg)) {
+					case LORA_BW_0200:
+						modulationParams.Params.LoRa.Bandwidth = LORA_BW_0200;
+						break;
+					case LORA_BW_0400:
+						modulationParams.Params.LoRa.Bandwidth = LORA_BW_0400;
+						break;
+					case LORA_BW_0800:
+						modulationParams.Params.LoRa.Bandwidth = LORA_BW_0800;
+						break;
+					case LORA_BW_1600:
+						modulationParams.Params.LoRa.Bandwidth = LORA_BW_1600;
+						break;
+					default:
+						printf("\nInvalid choice for bandwidth.\r\n\n");
+		        		show_usage(argv[0]);
+        				return 1;
+				}
+        		break;
+      		case 'c':
+				switch (atoi(optarg)) {
+					case LORA_CR_4_5:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_4_5;
+						break;
+					case LORA_CR_4_6:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_4_6;
+						break;
+					case LORA_CR_4_7:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_4_7;
+						break;
+					case LORA_CR_4_8:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_4_8;
+						break;
+					case LORA_CR_LI_4_5:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_LI_4_5;
+						break;
+					case LORA_CR_LI_4_6:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_LI_4_6;
+						break;
+					case LORA_CR_LI_4_7:
+						modulationParams.Params.LoRa.CodingRate = LORA_CR_LI_4_7;
+						break;
+					default:
+						printf("\nInvalid choice for coding rate.\r\n\n");
+		        		show_usage(argv[0]);
+        				return 1;
+				}
+        		break;
+      		case '?':
+        		if ((optopt=='f')||(optopt=='s')||(optopt=='b')||(optopt=='c'))
+          			printf ("\nOption -%c requires an argument.\n\n", optopt);
+        		else
+          			printf ("\nUnknown option character `\\x%x'.\n\n", optopt);
+		        return 1;
+      		default:
+        		break;
+        }
+    }
+
 	printf( "\n\n\r     Dreamcatcher Chat (v.%s)\n\n\r", "0.0 alpha" );
 
-        DirectLed = 1;
+    DirectLed = 1;
 
 	gpio_rffc5072_select=(gpio_t_rffc)malloc(sizeof(struct gpio_rffc));	
 	if (gpio_rffc5072_select==NULL)
@@ -371,23 +507,11 @@ int main()
 
     memset( &Buffer, 0x00, BufferSize );
 
-    modulationParams.PacketType                  = PACKET_TYPE_LORA;
-    modulationParams.Params.LoRa.SpreadingFactor = LORA_SF12;
-    modulationParams.Params.LoRa.Bandwidth       = LORA_BW_0400;
-    modulationParams.Params.LoRa.CodingRate      = LORA_CR_4_5;
-
-    PacketParams.PacketType                 = PACKET_TYPE_LORA;
-    PacketParams.Params.LoRa.PreambleLength = 0x08;
-    PacketParams.Params.LoRa.HeaderType     = LORA_PACKET_VARIABLE_LENGTH;
-    PacketParams.Params.LoRa.PayloadLength  = 50;
-    PacketParams.Params.LoRa.Crc            = LORA_CRC_ON;
-    PacketParams.Params.LoRa.InvertIQ       = LORA_IQ_INVERTED;
 /*
 	mixer_freq = 437;
 	mixer_freq_mhz = 2400 - mixer_freq;
 	rffc5071_set_frequency(&mixer, mixer_freq_mhz);
-*/	
-
+*/
 	while (!mixer_freq)
 	{
 		printf("Select TX frequency (Mhz):");
@@ -396,12 +520,12 @@ int main()
 			printf("Selected TX frequency: %hu MHz\r\n",mixer_freq);
 		    //allow actually inputting the damn tx freq that you want
 			mixer_freq_mhz = 2400 - mixer_freq;
-			rffc5071_set_frequency(&mixer, mixer_freq_mhz);
 		}else{
 			printf("Invalid choice. Range is 40 MHz to 6 GHz\r\n");
 			mixer_freq=0;
 		}
 	}
+    rffc5071_set_frequency(&mixer, mixer_freq_mhz);
 
     if (pipe(pipefd_radio) != 0) {
       perror("pipe");
