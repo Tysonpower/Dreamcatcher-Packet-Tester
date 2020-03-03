@@ -296,6 +296,7 @@ void * consumer(void *p)
     if (read(fd, buffer, BUFFER_SIZE-HEADER_SIZE)!=-1)
 	{	
 		printf(">%s\r\n",buffer);
+		fflush(stdout);
 	}
   }
 }
@@ -308,6 +309,7 @@ void * producer(void *p)
 	for (;;) {
 		fgets(buffer, BUFFER_SIZE-HEADER_SIZE, stdin);
 		write(fd, (void *)buffer, strlen(buffer));
+		fflush(stdout);
 	}
 }
 
@@ -526,6 +528,7 @@ int main(int argc, char *argv[])
 		}
 	}
     rffc5071_set_frequency(&mixer, mixer_freq_mhz);
+	fflush(stdout);
 
     if (pipe(pipefd_radio) != 0) {
       perror("pipe");
