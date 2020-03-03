@@ -672,6 +672,7 @@ int main(int argc, char *argv[])
 				AppState = APP_LOWPOWER;
                 break;
         }
+		fflush(stdout);
 
 	}
 }
