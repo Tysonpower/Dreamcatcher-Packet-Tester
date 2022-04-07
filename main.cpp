@@ -299,7 +299,7 @@ void * consumer(void *p)
 		Radio.GetPacketStatus(&PacketStatus);
     	RssiValue = PacketStatus.LoRa.RssiPkt;
     	SnrValue = PacketStatus.LoRa.SnrPkt;
-    	printf("%s (rssi: %d; snr: %d)\n\r", buffer, RssiValue, SnrValue );
+    	printf("%s (rssi: %d snr: %d)\r\n", buffer, RssiValue, SnrValue );
 		fflush(stdout);
 	}
   }
