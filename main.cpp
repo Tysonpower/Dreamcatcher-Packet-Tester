@@ -295,7 +295,11 @@ void * consumer(void *p)
   for (;;) {
     if (read(fd, buffer, BUFFER_SIZE-HEADER_SIZE)!=-1)
 	{	
-		printf(">%s\r\n",buffer);
+		//printf(">%s\r\n",buffer);
+		Radio.GetPacketStatus(&PacketStatus);
+    	RssiValue = PacketStatus.LoRa.RssiPkt;
+    	SnrValue = PacketStatus.LoRa.SnrPkt;
+    	printf("%s (rssi: %d; snr: %d)\n\r", buffer, RssiValue, SnrValue );
 		fflush(stdout);
 	}
   }
